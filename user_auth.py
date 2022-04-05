@@ -100,7 +100,7 @@ def creat_pdf(doctor, user, apoint):
     pdf.cell(190, 8, "Doctor's Details", 1, ln=1, align='C')
     pdf.set_font("Arial", size=12)
     pdf.cell(100, 10, txt="Name" + '  =' + ' '*10 + str(doctor.first_name + '  ' + doctor.last_name), ln=1, align='L')
-    pdf.cell(100, 10, txt="Specification" + '  =' + ' '*10 + str(doctor.speciality), ln=1, align='L')
+    pdf.cell(100, 10, txt="Speciality" + '  =' + ' '*10 + str(doctor.speciality), ln=1, align='L')
     pdf.cell(100, 10, txt="Address" + '  =' + ' '*10 + str(doctor.address), ln=1, align='L')
     pdf.cell(100, 10, txt="Date & Time" + '  =' + ' '*10 + str(apoint.app_time), ln=1, align='L')
     pdf.cell(300, 70, txt="Note:- Please be on time", ln=1, align='C')
