@@ -72,10 +72,10 @@ def user_login():
 def creat_pdf(doctor, user, apoint):
     pdf = FPDF()
     pdf.add_page()
-    pdf.line(5.0, 5.0, 205.0, 5.0) # top one
-    pdf.line(5.0, 292.0, 205.0, 292.0) # bottom one
-    pdf.line(5.0, 5.0, 5.0, 292.0) # left one
-    pdf.line(205.0, 5.0, 205.0, 292.0) # right one
+    pdf.line(5.0, 5.0, 205.0, 5.0)  # top one
+    pdf.line(5.0, 292.0, 205.0, 292.0)  # bottom one
+    pdf.line(5.0, 5.0, 5.0, 292.0)  # left one
+    pdf.line(205.0, 5.0, 205.0, 292.0)  # right one
     pdf.set_font("Arial", 'B', size=17)
     pdf.cell(200, 10, "Appointment Confirmation Letter", ln=1, align='C')
     pdf.set_font("Arial", size=8)
@@ -84,7 +84,8 @@ def creat_pdf(doctor, user, apoint):
     pdf.cell(350, 10, txt="Date:- " + str(apoint.book_time), ln=1, align='C')
     pdf.set_font("Arial", size=11)
     pdf.cell(200, 8, txt="Dear,"+str(user.name), ln=1, align='L')
-    pdf.cell(200, 8, txt="          This is a reminder that your appointment is scheduled on date.", ln=1, align='L')
+    pdf.cell(200, 8, txt="          This is a reminder that your appointment is scheduled on date {}."
+                         .format(doctor.available_date), ln=1, align='L')
     pdf.cell(200, 10, "If you can not make this appointment, please call our office at 01224-789456 at least"
                       " 24 hours prior to this ", ln=5, align='L')
     pdf.cell(200, 10, "appointment. We would be happy to rescheduled your appointment for "
@@ -102,7 +103,7 @@ def creat_pdf(doctor, user, apoint):
     pdf.cell(100, 10, txt="Name" + '  =' + ' '*10 + str(doctor.first_name + '  ' + doctor.last_name), ln=1, align='L')
     pdf.cell(100, 10, txt="Speciality" + '  =' + ' '*10 + str(doctor.speciality), ln=1, align='L')
     pdf.cell(100, 10, txt="Address" + '  =' + ' '*10 + str(doctor.address), ln=1, align='L')
-    pdf.cell(100, 10, txt="Date & Time" + '  =' + ' '*10 + str(apoint.app_time), ln=1, align='L')
+    pdf.cell(100, 10, txt="Time" + '  =' + ' '*10 + str(apoint.app_time), ln=1, align='L')
     pdf.cell(300, 70, txt="Note:- Please be on time", ln=1, align='C')
     pdf.output("Appointment_{}.pdf".format(user.name))
 
@@ -115,36 +116,38 @@ def book_appointment():
         pat_age = formdata.get("PATIENT AGE")
         pat_gender = formdata.get("PATIENT GENDER")
         doc_id = formdata.get("DOCTOR ID")
+        date = formdata.get("APPOINTMENT DATE")
         time = formdata.get("APPOINTMENT TIME")
 
         doctor = Doctor.query.filter_by(id=doc_id).first()
         user = User.query.filter(session.get('EMAIL') == User.email).first()
         if doctor:
+            print(doctor.available_date)
+            print(date)
             from datetime import datetime
-            available = datetime.strptime(str(doctor.available_time), '%Y-%d-%m %H:%M:%S')
-            app_time = datetime.strptime(str(time), '%Y-%d-%m %H:%M:%S')
-            last_available = datetime.strptime(str(doctor.lat_available), '%Y-%d-%m %H:%M:%S')
-            d1 = available.time()
-            d2 = app_time.time()
-            d3 = last_available.time()
-            print(d1, d2, d3)
-            if d1 < d2 < d3:
-                apoint = Appointment(user=user.reg_id, pat_name=pat_name, pat_age=pat_age, pat_gender=pat_gender,
-                                     doctor=doc_id, app_time=time)
-                db.session.add(apoint)
-                db.session.commit()
-                creat_pdf(doctor, user, apoint)
-                app.config["CLIENT_PDF"] = 'F:\\postman\\Doctor'
-                path = 'F:\\postman\\Doctor'
-                pdf_filename = "Appointment_{}.pdf".format(user.name)
-                try:
-                    return send_from_directory(app.config["CLIENT_PDF"], filename=pdf_filename,
-                                               path=path, as_attachment=True)
-                except FileNotFoundError:
-                    return 'abort(404)'
-               # return jsonify({"SUCCESS": "Appointment successfully booked"})
+            if datetime.strptime(str(doctor.available_date), '%Y-%d-%m') == datetime.strptime(str(date), '%Y-%d-%m'):
+                d1 = datetime.strptime(str(doctor.available_time), '%H:%M:%S')
+                d2 = datetime.strptime(str(time), '%H:%M:%S')
+                d3 = datetime.strptime(str(doctor.lat_available), '%H:%M:%S')
+                if d1 < d2 < d3:
+                    apoint = Appointment(user=user.reg_id, pat_name=pat_name, pat_age=pat_age, pat_gender=pat_gender,
+                                         doctor=doc_id, app_date=doctor.available_date,  app_time=time)
+                    db.session.add(apoint)
+                    db.session.commit()
+                    creat_pdf(doctor, user, apoint)
+                    app.config["CLIENT_PDF"] = 'F:\\postman\\Doctor'
+                    path = 'F:\\postman\\Doctor'
+                    pdf_filename = "Appointment_{}.pdf".format(user.name)
+                    try:
+                        return send_from_directory(app.config["CLIENT_PDF"], filename=pdf_filename,
+                                                   path=path, as_attachment=True)
+                    except FileNotFoundError:
+                        return 'abort(404)'
+                    #  return jsonify({"SUCCESS": "Appointment successfully booked"})
+                else:
+                    return jsonify({"ERROR": "Doctor is not available in this time"})
             else:
-                return jsonify({"ERROR": "Doctor is not available in this time"})
+                return jsonify({"ERROR": "Doctor is not available on this date"})
         else:
             return jsonify({"ERROR": "Invalid doctor id"})
     else:
