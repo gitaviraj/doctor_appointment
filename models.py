@@ -12,8 +12,9 @@ class Doctor(db.Model):
     speciality = db.Column(db.String(100), nullable=False)
     address = db.Column(db.String(100))
     status = db.Column(db.String(10), nullable=False)
-    available_time = db.Column(db.DateTime())
-    lat_available = db.Column(db.DateTime())
+    available_date = db.Column(db.Date())
+    available_time = db.Column(db.Time())
+    lat_available = db.Column(db.Time())
 
 
 class User(db.Model):
@@ -21,7 +22,7 @@ class User(db.Model):
     name = db.Column(db.String(50), nullable=False)
     age = db.Column(db.Integer(), nullable=False)
     gender = db.Column(db.String(50), nullable=False)
-    dob = db.Column(db.DateTime(), nullable=False)
+    dob = db.Column(db.Date(), nullable=False)
     mobile = db.Column(db.Integer(), nullable=False, unique=True)
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(15), nullable=False)
@@ -34,6 +35,7 @@ class Appointment(db.Model):
     pat_age = db.Column(db.Integer(), nullable=False)
     pat_gender = db.Column(db.String(50), nullable=False)
     doctor = db.Column(db.Integer(), db.ForeignKey('doctor.id'))
-    app_time = db.Column(db.DateTime())
+    app_date = db.Column(db.Date())
+    app_time = db.Column(db.Time())
     book_time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     address = db.Column(db.String(100))

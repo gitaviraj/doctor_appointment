@@ -25,6 +25,8 @@ def validate_details(reqbody):
         error["ADDRESS"] = "Address required..."
     if not reqbody.__contains__('STATUS'):
         error["STATUS"] = "Status required..."
+    if not reqbody.__contains__('AVAILABLE_DATE'):
+        error["AVAILABLE_DATE"] = "Available date required..."
     if not reqbody.__contains__('AVAILABLE_TIME'):
         error["AVAILABLE_TIME"] = "Available time required..."
     if not reqbody.__contains__('AVAILABLE_TILL'):
@@ -45,6 +47,7 @@ def add_doctor():
     special = formdata.get("SPECIALIZATION")
     address = formdata.get("ADDRESS")
     status = formdata.get("STATUS")
+    date = formdata.get("AVAILABLE_DATE")
     time1 = formdata.get("AVAILABLE_TIME")
     time2 = formdata.get("AVAILABLE_TILL")
 
@@ -59,8 +62,10 @@ def add_doctor():
     if errors:
         return json.dumps(errors)
     else:
-        doctor = Doctor(first_name=fname, last_name=lname, mobile=mobile, email=email, qualification=qual,
-                        speciality=special, address=address, status=status, available_time=time1, lat_available=time2)
+        doctor = Doctor(first_name=fname.title(), last_name=lname.title(), mobile=mobile, email=email, qualification=qual,
+                        speciality=special.title(), address=address.title(), status=status, available_date=date,
+                        available_time=time1,
+                        lat_available=time2)
         db.session.add(doctor)
         db.session.commit()
         return jsonify({"SUCCESS": "DOCTOR ADDED"})
@@ -69,7 +74,7 @@ def add_doctor():
 @auth.route('/doctor/search/fname/<fname>')
 def search_doctor_by_first_name(fname):
     if session.get('EMAIL'):
-        doctors = Doctor.query.filter(fname == Doctor.first_name).all()
+        doctors = Doctor.query.filter(fname.title() == Doctor.first_name).all()
         doctor_list = []
         if doctors:
             for doc in doctors:
@@ -78,9 +83,11 @@ def search_doctor_by_first_name(fname):
                             "QUALIFICATION": doc.qualification,
                             "SPECIALIZATION": doc.speciality,
                             "ADDRESS": doc.address,
-                            "AVAILABLE": str(doc.available_time) + '  to  ' + str(doc.lat_available)
+                            " AVAILABLE DATE": str(doc.available_date),
+                            "AVAILABLE_TIME": str(doc.available_time) + '  to  ' + str(doc.lat_available)
                          }
                 doctor_list.append(doctor)
+                print(doctor_list)
             return json.dumps(doctor_list)
         else:
             return jsonify({"ERROR": "Doctor doesn't found"})
@@ -91,7 +98,7 @@ def search_doctor_by_first_name(fname):
 @auth.route('/doctor/search/lname/<lname>')
 def search_doctor_by_last_name(lname):
     if session.get('EMAIL'):
-        doctors = Doctor.query.filter(lname == Doctor.first_name).all()
+        doctors = Doctor.query.filter(lname.title() == Doctor.first_name).all()
         doctor_list = []
         if doctors:
             for doc in doctors:
@@ -100,7 +107,8 @@ def search_doctor_by_last_name(lname):
                           "QUALIFICATION": doc.qualification,
                           "SPECIALIZATION": doc.speciality,
                           "ADDRESS": doc.address,
-                          "AVAILABLE": str(doc.available_time) + '  to  ' + str(doc.lat_available)
+                          " AVAILABLE DATE": str(doc.available_date),
+                          "AVAILABLE TIME": str(doc.available_time) + '  to  ' + str(doc.lat_available)
                           }
                 doctor_list.append(doctor)
             return json.dumps(doctor_list)
@@ -116,12 +124,13 @@ def search_doctor_by_speciality(speciality):
         Doctors = Doctor.query.all()
         doctor_list = []
         for doc in Doctors:
-            if doc.speciality.__contains__(speciality.upper()):
+            if doc.speciality.__contains__(speciality.title()):
                 doctor = {"NAME": doc.first_name + " " + doc.last_name,
                           "QUALIFICATION": doc.qualification,
                           "SPECIALIZATION": doc.speciality,
                           "ADDRESS": doc.address,
-                          "AVAILABLE": str(doc.available_time) + '  to  ' + str(doc.lat_available)}
+                          " AVAILABLE DATE": str(doc.available_date),
+                          "AVAILABLE TIME": str(doc.available_time) + '  to  ' + str(doc.lat_available)}
                 doctor_list.append(doctor)
 
         if doctor_list:
@@ -137,14 +146,16 @@ def search_doctor_by_area(area):
     if session.get('EMAIL'):
         Doctors = Doctor.query.all()
         doctor_list = []
+        print(area.title())
         for doc in Doctors:
-            if doc.address.__contains__(area.upper()):
+            if doc.address.__contains__(area.title()):
                 doctor = {
                             "NAME": doc.first_name + " " + doc.last_name,
                             "QUALIFICATION": doc.qualification,
                             "SPECIALIZATION": doc.speciality,
                             "ADDRESS": doc.address,
-                            "AVAILABLE": str(doc.available_time) + '  to  ' + str(doc.lat_available)
+                            " AVAILABLE DATE": str(doc.available_date),
+                            "AVAILABLE TIME": str(doc.available_time) + '  to  ' + str(doc.lat_available)
                          }
                 doctor_list.append(doctor)
 
@@ -179,6 +190,8 @@ def update_doctor_details(id):
             doctor.address = formdata.get("ADDRESS")
         if formdata.get("STATUS"):
             doctor.status = formdata.get("STATUS")
+        if formdata.get("AVAILABLE_DATE"):
+            doctor.available_time = formdata.get("AVAILABLE_DATE")
         if formdata.get("AVAILABLE_TIME"):
             doctor.available_time = formdata.get("AVAILABLE_TIME")
         if formdata.get("AVAILABLE_TILL"):
