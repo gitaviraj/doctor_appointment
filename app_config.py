@@ -5,7 +5,7 @@ from flask_jwt_extended import *
 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:avinashsql@localhost/doctor'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:123456@localhost/postgres'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = "18298ajdi@&$hfljwl*(#rhgkjilejlk"
 db = SQLAlchemy(app)

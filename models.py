@@ -6,7 +6,7 @@ class Doctor(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     first_name = db.Column(db.String(30), nullable=False)
     last_name = db.Column(db.String(30), nullable=False)
-    mobile = db.Column((db.Integer()), nullable=False)
+    mobile = db.Column((db.String(10)), nullable=False)
     email = db.Column(db.String(50), nullable=False, unique=True)
     qualification = db.Column(db.String(50), nullable=False)
     speciality = db.Column(db.String(100), nullable=False)
